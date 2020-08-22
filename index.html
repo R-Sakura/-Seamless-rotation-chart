@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        img {
+            display: block;
+        }
+        
+        ul,
+        li,
+        ol {
+            list-style: none;
+        }
+        
+        div {
+            width: 1000px;
+            height: 562px;
+            border: 2px solid #000;
+            margin: 100px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        ul {
+            height: 526px;
+            /* width: 7000px; */
+            position: relative;
+        }
+        
+        ul li {
+            width: 1000px;
+            height: 526px;
+            float: left;
+        }
+        
+        ul>li>img {
+            width: 1000px;
+            height: 562px;
+        }
+        
+        ol {
+            width: 200px;
+            height: 20px;
+            position: absolute;
+            bottom: 30px;
+            right: 50px;
+            display: flex;
+        }
+        
+        ol li {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #9999;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        p {
+            color: #ffffff;
+            font-size: 25px;
+            position: absolute;
+            top: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        
+        .left {
+            left: 0;
+        }
+        
+        .right {
+            right: 0;
+        }
+        
+        .active {
+            background-color: chocolate;
+        }
+    </style>
+    <title>Document</title>
+
+</head>
+
+<body>
+    <div class="box">
+        <ul>
+            <li style="opacity: 1;"><img src="./images/261f93de8ea0ac86e3fd0d835b377bbb.jpg" alt=""></li>
+            <li><img src="./images/29d307aa63280ab0ab6e9eddb7115ed8.jpg" alt=""></li>
+            <li><img src="./images/57b74da93e7f2a336d2ac43f9f42d78d.jpg" alt=""></li>
+            <li><img src="./images/58e82a5fb7fc77f2858c8f71f575cb67.jpg" alt=""></li>
+            <li><img src="./images/754fb00a551505a81030131ae28d0633.jpg" alt=""></li>
+        </ul>
+        <ol>
+
+        </ol>
+        <p class="left">上一张</p>
+        <p class="right">下一张</p>
+
+    </div>
+    <script src="./utils.js"></script>
+    <script>
+        const ul = my$("ul")[0],
+            ol = my$("ol")[0],
+            box = my$(".box")[0],
+            left = my$(".left")[0],
+            right = my$(".right")[0]
+        let currentIndex = 1,
+            nextIndex = 2,
+            circles = null,
+            ulis = my$("li", ul),
+            length = ulis.length,
+            liWidth = ulis[0].offsetWidth,
+            timer = null
+        flag = true
+            // 赋值第一张图片加到最后，复制最后一张图图片加到最前面
+        const first = ulis[0].cloneNode(true)
+        const last = ulis[length - 1].cloneNode(true)
+        ul.appendChild(first)
+        ul.insertBefore(last, ulis[0])
+            //    动态设置ul宽度并且更新length和ulis
+        ulis = my$("li", ul)
+        length = ulis.length
+        css(ul, "width", length * liWidth + "px")
+            // 默认小圆点
+        for (let i = 0; i < length - 2; i++) {
+            let li = document.createElement("li")
+            li.className = i === 0 ? "active" : ""
+            ol.appendChild(li)
+        }
+        circles = my$("li", ol)
+            // 设置默认显示第二张图片
+        css(ul, "left", -liWidth + "px")
+
+        function move() {
+            animate(ul, {
+                left: -nextIndex * liWidth
+            }, 1500, () => {
+                if (currentIndex >= length - 1) {
+                    currentIndex = 1
+                    nextIndex = 2
+                    css(ul, "left", -liWidth + "px")
+                }
+                if (currentIndex <= 0) {
+                    currentIndex = length - 2
+                    nextIndex = length - 1
+                    css(ul, "left", -(length - 2) * liWidth + "px")
+                }
+                flag = true
+            })
+            let circleIndex = nextIndex - 1
+            for (let i = 0; i < length - 2; i++) {
+                circles[i].className = ""
+            }
+            if (circleIndex > length - 3) {
+                circleIndex = 0
+            }
+            if (circleIndex < 0) {
+                circleIndex = length - 3
+            }
+            circles[circleIndex].className = "active"
+            currentIndex = nextIndex
+            nextIndex++
+        }
+        timer = setInterval(move, 2500)
+        on(box, "mouseenter", () => {
+            clearInterval(timer)
+            fadeIn(left, 1500)
+            fadeIn(right, 1500)
+        })
+        on(box, "mouseleave", () => {
+            timer = setInterval(move, 2500)
+            fadeOut(left, 1500)
+            fadeOut(right, 1500)
+        })
+
+        on(ol, "mouseover", function(e) {
+            e = e || window.event
+            const target = e.target || w.srcElement
+            if (target.nodeName === "LI") {
+                let index = Array.from(circles).indexOf(target)
+                if ((currentIndex - 1) != index) {
+                    nextIndex = index + 1
+                    move()
+                }
+            }
+        })
+
+        on(right, "click", function() {
+            if (flag) {
+                move()
+                flag = false
+            }
+        })
+        on(left, "click", function() {
+            if (flag) {
+                nextIndex = currentIndex - 1
+                move()
+                flag = false
+            }
+        })
+    </script>
+</body>
+
+</html>
